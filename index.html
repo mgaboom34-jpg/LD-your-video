@@ -65,14 +65,30 @@ input,select,textarea{width:100%;background:#0d0d12;border:1px solid #ffffff22;c
 .pl{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);z-index:2;width:64px;height:64px;border-radius:50%;background:#ffffff26;backdrop-filter:blur(8px);display:grid;place-items:center;font-style:normal;font-size:24px}
 
 .card{background-position:center top}.pan iframe{display:block}
+#fab{position:fixed;inset-inline-start:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:var(--g);color:#fff;font-size:34px;line-height:1;z-index:30;box-shadow:0 8px 30px #a855f788;cursor:pointer}#fab[hidden]{display:none}
 </style>
 </head>
 <body>
 <div class="glow"></div>
 <div id="app"></div>
+<button id="fab" hidden aria-label="הוסף פרויקט">+</button>
+<div class="sheet" id="adm"><div class="pan">
+<h2>ניהול תיק העבודות</h2>
+<input id="f_t" placeholder="שם הפרויקט">
+<select id="f_c"><option>רילס וסושיאל</option><option>עריכת וידאו</option><option>גרפיקה</option><option>מיתוג</option><option>אחר</option></select>
+<textarea id="f_d" rows="3" placeholder="תיאור קצר"></textarea>
+<input id="f_l" type="url" dir="ltr" placeholder="קישור לסרטון (טיקטוק / יוטיוב)">
+<input id="f_i" type="file" accept="image/*">
+<button class="btn" style="width:100%" id="f_s">הוסף פרויקט</button>
+<h2 style="margin-top:22px;font-size:17px">הפרויקטים שלי</h2>
+<div id="list"></div>
+<button class="btn o" style="width:100%;margin-top:14px" id="f_c2">סגור</button>
+<button id="f_x" style="background:none;border:0;color:#9a9aa8;margin-top:12px;width:100%">התנתק במכשיר הזה</button>
+</div></div>
+<div class="toast" id="toast"></div>
 <div class="sheet" id="view"><div class="pan" id="vp"></div></div>
 <script>
-const $=s=>document.querySelector(s),D={"p": [{"id": "tt1", "t": "רילס 1", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7693204004909763861"}, {"id": "tt2", "t": "רילס 2", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7685065398177320212"}, {"id": "tt3", "t": "רילס 3", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7679835252574965012"}, {"id": "tt4", "t": "רילס 4", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7680612548835790100"}, {"id": "tt5", "t": "רילס 5", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7681331057966566676"}]};
+const $=s=>document.querySelector(s);let D={"p": [{"id": "tt1", "t": "רילס 1", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7693204004909763861"}, {"id": "tt2", "t": "רילס 2", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7685065398177320212"}, {"id": "tt3", "t": "רילס 3", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7679835252574965012"}, {"id": "tt4", "t": "רילס 4", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7680612548835790100"}, {"id": "tt5", "t": "רילס 5", "c": "רילס וסושיאל", "d": "עריכה וגרפיקה של L&D your video", "l": "https://www.tiktok.com/@ld.your.video/video/7681331057966566676"}]};
 let cat='הכל';
 const DRIVE='https://drive.google.com/drive/folders/13o16I06arWrH7O5ZYTw542CttlgWuPms?usp=sharing';
 function tt(l){const m=l.match(/\/video\/(\d+)/);return m?'https://www.tiktok.com/embed/v2/'+m[1]:null}
@@ -81,11 +97,12 @@ function render(){
  $('#app').innerHTML=`<div class="hero"><img src="logo.webp" alt="L&D your video"><h1>הופכים רעיונות ל<span>וידאו וגרפיקה</span><br>שאי אפשר להתעלם מהם</h1><p>עריכת וידאו · גרפיקה · מיתוג · הכל במקום אחד</p><div class="btns"><a class="btn" href="#w">לעבודות שלי</a></div><div class="arrow">▼ גלול ▼</div></div>
  <section id="w"><div class="t rv">העבודות <span>שלי</span></div><div class="sub rv">${D.p.length} פרויקטים נבחרים</div>
  <div class="chips rv">${cats.map(c=>`<button class="chip ${c==cat?'on':''}" data-c="${c}"></button>`).join('')}</div>
- <div class="grid">${list.map(p=>`<div class="card rv" style="background-image:url(cover.jpg)"><i class="pl">▶</i><div class="in2"><small></small><h3></h3></div></div>`).join('')}</div>
+ <div class="grid">${list.map(p=>`<div class="card rv" style="background-image:url(${p.i||'cover.jpg'})"><i class="pl">▶</i><div class="in2"><small></small><h3></h3></div></div>`).join('')}</div>
  <div style="text-align:center;margin-top:28px"><a class="btn" target="_blank" rel="noopener" href="${DRIVE}">לכל העבודות בתיקיית הדרייב ↗</a></div></section>
  <footer>© L&amp;D your video</footer>`;
  document.querySelectorAll('.chip').forEach(b=>{b.textContent=b.dataset.c;b.onclick=()=>{cat=b.dataset.c;render()}});
  document.querySelectorAll('.card').forEach((c,k)=>{const p=list[k];c.querySelector('small').textContent=p.c;c.querySelector('h3').textContent=p.t;c.onclick=()=>open_(p)});
+ $('footer').onclick=tap;$('#fab').hidden=!tok();
  const io=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12});
  document.querySelectorAll('.rv').forEach(e=>io.observe(e));
 }
@@ -100,7 +117,36 @@ function open_(p){
  $('#view').classList.add('open');
 }
 $('#view').onclick=e=>{if(e.target.id=='view')shut()};
-render();
+
+const R='mgaboom34-jpg/LD-your-video',API='https://api.github.com/repos/'+R+'/contents/';
+const tok=()=>{try{return localStorage.getItem('ldtok')}catch(e){return null}};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',4500)};
+async function gh(p,m,b){const r=await fetch(API+p,{method:m||'GET',cache:'no-store',headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json'},body:b?JSON.stringify(b):undefined});if(!r.ok)throw new Error(r.status);return r.json()}
+const b64s=s=>{let x='';new TextEncoder().encode(s).forEach(c=>x+=String.fromCharCode(c));return btoa(x)};
+const unb=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+async function put(p,content,msg){let sha;try{sha=(await gh(p+'?ref=main')).sha}catch(e){}return gh(p,'PUT',{message:msg,content,sha,branch:'main'})}
+async function edit(fn,msg){let cur,sha;try{const f=await gh('projects.json?ref=main');sha=f.sha;cur=JSON.parse(unb(f.content))}catch(e){cur=JSON.parse(JSON.stringify(D))}
+ fn(cur);await gh('projects.json','PUT',{message:msg,content:b64s(JSON.stringify(cur,null,1)),sha,branch:'main'});D=cur;render();rl()}
+function img(f){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const m=new Image();m.onerror=no;m.onload=()=>{const s=Math.min(1,1000/Math.max(m.width,m.height)),c=document.createElement('canvas');c.width=m.width*s;c.height=m.height*s;c.getContext('2d').drawImage(m,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.8).split(',')[1])};m.src=r.result};r.readAsDataURL(f)})}
+const err=e=>/^40[13]$/.test(e.message)?'המפתח לא תקין או שפג תוקפו':'נכשל: '+e.message;
+function rl(){const l=$('#list');l.innerHTML='';D.p.forEach(p=>{const r=document.createElement('div');r.className='row';const s=document.createElement('span');s.textContent=p.t;
+ const c=document.createElement('button');c.textContent='שער';c.style.cssText='background:#22d3ee33;color:#22d3ee';
+ c.onclick=()=>{const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=async()=>{if(!f.files[0])return;try{const i='img/'+p.id+'-'+Date.now()+'.jpg';await put(i,await img(f.files[0]),'Cover '+p.id);await edit(x=>{const q=x.p.find(z=>z.id==p.id);if(q)q.i=i},'Cover '+p.t);toast('השער עודכן, יופיע בעוד כדקה')}catch(e){toast(err(e))}};f.click()};
+ const b=document.createElement('button');b.textContent='מחק';b.onclick=async()=>{if(!confirm('למחוק את "'+p.t+'"?'))return;try{await edit(x=>{x.p=x.p.filter(z=>z.id!=p.id)},'Delete '+p.t);toast('נמחק')}catch(e){toast(err(e))}};
+ r.append(s,c,b);l.append(r)})}
+$('#f_s').onclick=async()=>{const t=$('#f_t').value.trim();if(!t)return toast('חסר שם פרויקט');const b=$('#f_s');b.disabled=true;b.textContent='מעלה...';
+ try{const id='p'+Date.now();let i='';const f=$('#f_i').files[0];if(f){i='img/'+id+'.jpg';await put(i,await img(f),'Add cover '+id)}
+  const p={id,t,c:$('#f_c').value,d:$('#f_d').value.trim(),l:$('#f_l').value.trim()};if(i)p.i=i;
+  await edit(c=>{c.p.unshift(p)},'Add project '+t);['f_t','f_d','f_l','f_i'].forEach(x=>$('#'+x).value='');toast('נשמר! האתר מתעדכן ויופיע בעוד כדקה')}
+ catch(e){toast(err(e))}b.disabled=false;b.textContent='הוסף פרויקט'};
+const openAdm=()=>{$('#adm').classList.add('open');rl()};
+$('#fab').onclick=openAdm;$('#f_c2').onclick=()=>$('#adm').classList.remove('open');
+$('#f_x').onclick=()=>{try{localStorage.removeItem('ldtok')}catch(e){}$('#adm').classList.remove('open');render()};
+let n=0,tm;function tap(){n++;clearTimeout(tm);tm=setTimeout(()=>n=0,2500);if(n>=5){n=0;setup()}}
+async function setup(){if(tok())return openAdm();const k=prompt('הדבק כאן את מפתח הגיטהאב');if(!k)return;
+ try{localStorage.setItem('ldtok',k.trim());await gh('projects.json?ref=main');toast('המפתח נשמר ✓');render();openAdm()}catch(e){try{localStorage.removeItem('ldtok')}catch(_){}toast('המפתח לא עבד, בדוק שהעתקת אותו במלואו')}}
+function load(){fetch('projects.json?'+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&Array.isArray(j.p)){D=j;render()}}).catch(()=>{})}
+render();load();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
